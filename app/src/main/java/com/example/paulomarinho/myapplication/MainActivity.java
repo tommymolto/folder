@@ -30,6 +30,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,7 +43,9 @@ public class MainActivity extends AppCompatActivity {
     public String SoapInput;
     public String login = "";
     public String senha = "";
-
+    public String extensao;
+    public String nomeArquivo;
+    public String arquivoBase64;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void gerenciaImagemRecebida(Uri imgUpload){
         //chamar o web servce
+        extensao = imgUpload.getLastPathSegment();
         enviaArquivo x = new enviaArquivo();
         x.execute();
     }
@@ -156,11 +160,20 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
 
+
+
+
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            arquivoBase64 = encodeImageFileTobase64(params[0]);
             SoapInput = "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                     "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"> " ;
             SoapInput += "<soap:Body>" +
-            "<recebeArquivo xmlns=\"http://projetos.lab245.com.br/WebService/\">" +
-            "<Login>"+  login + "</Login>" +
+                    "<recebeArquivo xmlns=\"http://projetos.lab245.com.br/WebService/\">" +
+                    "<Login>"+  login + "</Login>" +
                     "<Senha>" + senha +"</Senha>" +
                     "<Topico>" + topico +"</Topico>" +
                     "<Documento1>a</Documento1>" +
@@ -185,20 +198,14 @@ public class MainActivity extends AppCompatActivity {
                     "<Documento20>sdf</Documento20>" +
                     "<arquivo>" +
                     "<objeto>" +
-                        "<head>string</head>" +
-                        "<corpo>string</corpo>" +
+                    "<head>"+ Math.random()*10000 +"."+ extensao +"</head>" +
+                    "<corpo>" + arquivoBase64+ "</corpo>" +
                     "</objeto>" +
                     "</arquivo>" +
                     "</recebeArquivo>" +
                     "</soap:Body>" +
                     "</soap:Envelope>";
 
-
-            super.onPreExecute();
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
             String urlString = URL;
 
             String data = params[1];
