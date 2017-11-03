@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * @2DO: isso tem que receber do login do usuario e criar um spinner
      */
+
     public static String topico = "TESTES FOLDRES";
     private static final String URL = "http://projetos.lab245.com.br/webservice/global.asmx";
     public String SoapInput;
@@ -56,12 +57,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-/*GAMBIARRA*/
+
+        /*GAMBIARRA
+        * TIRAR DEPOIS E USAR O LOGIN/SENHA
+        * */
         SharedPreferences sp = this.getSharedPreferences("lab245",0);
         SharedPreferences.Editor ed = sp.edit();
         ed.putString("usuario", "lab245");
         ed.putString("senha", "lab245");
         ed.commit();
+/*
+FIM GAMBIARRA
+ */
 
         if (!verificaLogin()) {
             //redireciona para login
@@ -81,14 +88,16 @@ public class MainActivity extends AppCompatActivity {
             String action = intent.getAction(); // pega tipo de chamada
             String type = intent.getType(); // pega tipo de envio
             if (Intent.ACTION_SEND.equals(action) && type != null) {
-                Log.e("LAB245", "recebifo");
+                Log.e("LAB245", "recebido");
                 Uri imgUpload = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
                // Uri imgUpload = (Uri) intent.getData();
                 Bitmap bitmap;
                 try {
                     Log.e("LAB245", "convertendo");
+                    //CONVERSAO PARA BITMAP
                     bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imgUpload));
                     Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 500, 500, false);
+                    //BITMAP PARA Base64
                     nomeArquivo = ConvertBitmapToString(resizedBitmap);
                     Log.e("LAB245", "convertifo");
 
@@ -98,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("LAB245", "erro de caminho");
                     e.printStackTrace();
                 }
+                //PROCESSO DE SUBIDA em BACKGROUND
                 gerenciaImagemRecebida(imgUpload);
             } else if (Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null) {
                 gerenciaImagensRecebidas(intent);
@@ -106,16 +116,29 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    /**
+     * COnversao para base64
+     * @param bitmap
+     * @return
+     */
     public static String ConvertBitmapToString(Bitmap bitmap){
+
         String encodedImage = "";
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-        try {
-            encodedImage= URLEncoder.encode(Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+       // try {
+
+            //SEM URL ENCODER
+            encodedImage= Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT);
+            //COM URL ENCODER
+            //encodedImage= URLEncoder.encode(Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT), "UTF-8");
+            Log.e("base64",encodedImage);
+        //} catch (UnsupportedEncodingException e) {
+        //    Log.e("erroConversao", e.toString());
+        //    e.printStackTrace();
+        //}
 
         return encodedImage;
     }
@@ -216,10 +239,9 @@ public class MainActivity extends AppCompatActivity {
                 URL url = new URL(urlString );
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("POST");
-
+                urlConnection.setRequestProperty("Content-Type", "text/xml");
                 urlConnection.setReadTimeout(10000);
                 urlConnection.setConnectTimeout(15000);
-                urlConnection.setRequestMethod("POST");
                 urlConnection.setDoInput(true);
                 urlConnection.setDoOutput(true);
                 out = new BufferedOutputStream(urlConnection.getOutputStream());
